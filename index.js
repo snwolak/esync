@@ -4,7 +4,6 @@ const http = require('http');
 const https = require('https');
 
 const utils = require('./helpers/utils');
-const mongoose = require('mongoose');
 const Regex = require("regex");
 const config = require('./config.js');
 let {options} = config;
@@ -14,230 +13,37 @@ http.globalAgent.maxSockets = Infinity;
 https.globalAgent.maxSockets = Infinity;
 
 if (process.env.STEEMJS_URL) {
-  steem.api.setOptions({ url: process.env.STEEMJS_URL });
+  steem.api.setOptions({ url: "https://api.steemit.com" });
 } else {
-  steem.api.setOptions({ url: options.url });
+  steem.api.setOptions({ url: "https://api.steemit.com"});
 }
 
-mongoose.connect(options.db_url);
 
 // define model =================
-let sdb_votes = mongoose.model('sdb_votes', {
-    _id: String,
-    voter: String,
-    weight: String,
-    author: String,
-    permlink: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_transfers = mongoose.model('sdb_transfers', {
-    _id: String,
-    from: String,
-    to: String,
-    amount: String,
-    memo: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_follows = mongoose.model('sdb_follows', {
-    _id: String,
-    follower: String,
-    following: String,
-    blog: Boolean,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_reblogs = mongoose.model('sdb_reblogs', {
-    _id: String,
-    account: String,
-    author: String,
-    permlink: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_claim_reward_balances = mongoose.model('sdb_claim_reward_balances', {
-    _id: String,
-    account: String,
-    reward_steem: String,
-    reward_sbd: String,
-    reward_vests: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_comments = mongoose.model('sdb_comments', {
-    _id: String,
-    parent_author: String,
-    parent_permlink: String,
-    author: String,
-    permlink: String,
-    title: String,
-    body: { type: String, default: ''},
-    json_metadata: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_mentions = mongoose.model('sdb_mentions', {
-    _id: String,
-    account: String,
-    post: Boolean,
-    author: String,
-    permlink: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_comment_options = mongoose.model('sdb_comment_options', {
-    _id: String,
-    author: String,
-    permlink: String,
-    max_accepted_payout: String,
-    percent_steem_dollars: String,
-    allow_votes: Boolean,
-    allow_curation_rewards: Boolean,
-    extensions: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_account_updates = mongoose.model('sdb_account_updates', {
-    _id: String,
-    account: String,
-    posting: String,
-    active: String,
-    owner: String,
-    memo_key: String,
-    json_metadata: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_producer_rewards = mongoose.model('sdb_producer_rewards', {
-    _id: String,
-    producer: String,
-    vesting_shares: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_curation_rewards = mongoose.model('sdb_curation_rewards', {
-    _id: String,
-    curator: String,
-    reward: String,
-    comment_author: String,
-    comment_permlink: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_author_rewards = mongoose.model('sdb_author_rewards', {
-    _id: String,
-    author: String,
-    permlink: String,
-    sbd_payout: String,
-    steem_payout: String,
-    vesting_payout: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_delegate_vesting_shares = mongoose.model('sdb_delegate_vesting_shares', {
-    _id: String,
-    delegator: String,
-    delegatee: String,
-    vesting_shares: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_comment_benefactor_rewards = mongoose.model('sdb_comment_benefactor_rewards', {
-    _id: String,
-    benefactor: String,
-    author: String,
-    permlink: String,
-    reward: String,
-    vest: Number,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_transfer_to_vestings = mongoose.model('sdb_transfer_to_vestings', {
-    _id: String,
-    from: String,
-    to: String,
-    amount: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_fill_orders = mongoose.model('sdb_fill_orders', {
-    _id: String,
-    current_owner: String,
-    current_orderid: String,
-    current_pays: String,
-    open_owner: String,
-    open_orderid: String,
-    open_pays: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_return_vesting_delegations = mongoose.model('sdb_return_vesting_delegations', {
-    _id: String,
-    account: String,
-    vesting_shares: String,
-    timestamp: { type: Date, expires: '90d'},
-  });
-let sdb_limit_order_creates = mongoose.model('sdb_limit_order_creates', {
-    _id: String,
-    owner: String,
-    orderid: String,
-    amount_to_sell: String,
-    min_to_receive: String,
-    fill_or_kill: Boolean,
-    expiration: Date,
-    timestamp: { type: Date, expires: '90d'},
-});
-let sdb_withdraw_vestings = mongoose.model('sdb_withdraw_vestings', {
-    _id: String,
-    account: String,
-    vesting_shares: String,
-    timestamp: { type: Date, expires: '90d'},
-});
-let sdb_account_witness_votes = mongoose.model('sdb_account_witness_votes', {
-    _id: String,
-    account: String,
-    witness: String,
-    approve: Boolean,
-    timestamp: { type: Date, expires: '90d'},
-});
-let sdb_fill_vesting_withdraws = mongoose.model('sdb_fill_vesting_withdraws', {
-    _id: String,
-    from_account: String,
-    to_account: String,
-    withdrawn: String,
-    deposited: String,
-    timestamp: { type: Date, expires: '90d'},
-});
-let sdb_states = mongoose.model('sdb_states', {
-    _id: String,
-    blockNumber: String,
-    timestamp: Date
-});
-let sdb_escrow_transfers = mongoose.model('sdb_escrow_transfers', {
-    _id: String,
-    from: String,
-    to: String,
-    sbd_amount: String,
-    steem_amount: String,
-    escrow_id: Number,
-    agent: String,
-    fee: String,
-    json_meta: String,
-    ratification_deadline: Date,
-    escrow_expiration: Date,
-    timestamp: Date
-});
-let sdb_notify = mongoose.model('sdb_notify', {
-    _id: String,
-    username: String,
-    type: String,
-    data: {},
-    timestamp: Date
-});
+let sdb_votes = []
+let sdb_transfers =[]
+let sdb_follows =[]
+let sdb_reblogs = []
+let sdb_claim_reward_balances = []
+let sdb_comments = []
+let sdb_mentions = []
+let sdb_comment_options = []
+let sdb_account_updates = []
 
-//===================
+
+
+
+
 
 let awaitingBlocks = [];
 
-function getBlockNum() {
-  return new Promise ((resolve, reject) => {
-    sdb_states.find({}, function(err,res){
-      if (err) {
-        console.log(err);
-        resolve(undefined);
-      }
-      else {
-        console.log(res);
-        var b = res[0].blockNumber || options.startingBlock || 0;
-        resolve(b);
-      }
-    });
+async function getBlockNum() {
+  let globalData = [];
+  await steem.api.getDynamicGlobalPropertiesAsync().then(result => {
+    globalData.push(result);
+    return globalData[0];
   });
+  return globalData[0].last_irreversible_block_num
 }
 
 const start = async () => {
@@ -323,7 +129,7 @@ const parseNextBlock = async () => {
           let oop = op[1];
 
           if (op[0]==='vote') {
-
+            
             votes.push({
               _id: oop.indx,
               voter: oop.voter,
@@ -597,165 +403,76 @@ const parseNextBlock = async () => {
         }//for
 
         if (votes.length>0) {
-            sdb_votes.collection.insertMany(votes, {ordered: false}, function(err,res){
-              if (err){
-                console.log('votes',err);
-              }
-            });
+          
         }
         if (transfers.length>0) {
-          sdb_transfers.collection.insertMany(transfers, {ordered: false}, function(err,res){
-            if (err){
-              console.log('transfers',err);
-            }
-          });
+          
         }
         if (follows.length>0) {
-          sdb_follows.collection.insertMany(follows, {ordered: false}, function(err,res){
-            if (err){
-              console.log('follows',err);
-            }
-          });
+          
         }
         if (reblogs.length>0) {
-          sdb_reblogs.collection.insertMany(reblogs, {ordered: false}, function(err,res){
-            if (err){
-              console.log('reblogs',err);
-            }
-          });
+          
         }
         if (mentions.length>0) {
-          sdb_mentions.collection.insertMany(mentions, {ordered: false}, function(err,res){
-            if (err){
-              console.log('mentions',err);
-            }
-          });
+          
         }
         if (comments.length>0) {
-          sdb_comments.collection.insertMany(comments, {ordered: false}, function(err,res){
-            if (err){
-              console.log('comments',err);
-            }
-          });
+          
         }
         if (comment_options.length>0) {
-          sdb_comment_options.collection.insertMany(comment_options, {ordered: false}, function(err,res){
-            if (err){
-              console.log('comment_options',err);
-            }
-          });
+          
         }
         if (rewards.length>0) {
-          sdb_claim_reward_balances.collection.insertMany(rewards, {ordered: false}, function(err,res){
-            if (err){
-              console.log('rewards',err);
-            }
-          });
+          
         }
         if (account_updates.length>0) {
-          sdb_account_updates.collection.insertMany(account_updates, {ordered: false}, function(err,res){
-            if (err){
-              console.log('account_updates',err);
-            }
-          });
+          
         }
         if (producer_rewards.length>0) {
-          sdb_producer_rewards.collection.insertMany(producer_rewards, {ordered: false}, function(err,res){
-            if (err){
-              console.log('producer_rewards',err);
-            }
-          });
+          
         }
         if (curation_rewards.length>0) {
-          sdb_curation_rewards.collection.insertMany(curation_rewards, {ordered: false}, function(err,res){
-            if (err){
-              console.log('curation_rewards',err);
-            }
-          });
+          
         }
         if (author_rewards.length>0) {
-          sdb_author_rewards.collection.insertMany(author_rewards, {ordered: false}, function(err,res){
-            if (err){
-              console.log('author_rewards',err);
-            }
-          });
+          
         }
         if (delegate_vesting_shares.length>0) {
-          sdb_delegate_vesting_shares.collection.insertMany(delegate_vesting_shares, {ordered: false}, function(err,res){
-            if (err){
-              console.log('delegate_vesting_shares',err);
-            }
-          });
+          
         }
         if (comment_benefactor_rewards.length>0) {
-          sdb_comment_benefactor_rewards.collection.insertMany(comment_benefactor_rewards, {ordered: false}, function(err,res){
-            if (err){
-              console.log('comment_benefactor_rewards',err);
-            }
-          });
+          
         }
         if (transfer_to_vestings.length>0) {
-          sdb_transfer_to_vestings.collection.insertMany(transfer_to_vestings, {ordered: false}, function(err,res){
-            if (err){
-              console.log('transfer_to_vestings',err);
-            }
-          });
+          
         }
         if (fill_orders.length>0) {
-          sdb_fill_orders.collection.insertMany(fill_orders, {ordered: false}, function(err,res){
-            if (err){
-              console.log('fill_orders',err);
-            }
-          });
+        
         }
         if (return_vesting_delegations.length>0) {
-          sdb_return_vesting_delegations.collection.insertMany(return_vesting_delegations, {ordered: false}, function(err,res){
-            if (err){
-              console.log('return_vesting_delegations',err);
-            }
-          });
+
         }
         if (withdraw_vestings.length>0) {
-          sdb_withdraw_vestings.collection.insertMany(withdraw_vestings, {ordered: false}, function(err,res){
-            if (err){
-              console.log('withdraw_vestings',err);
-            }
-          });
+         
         }
         if (limit_order_creates.length>0) {
-          sdb_limit_order_creates.collection.insertMany(limit_order_creates, {ordered: false}, function(err,res){
-            if (err){
-              console.log('limit_order_creates',err);
-            }
-          });
+         
         }
         if (fill_vesting_withdraws.length>0) {
-          sdb_fill_vesting_withdraws.collection.insertMany(fill_vesting_withdraws, {ordered: false}, function(err,res){
-            if (err){
-              console.log('fill_vesting_withdraws',err);
-            }
-          });
+         
         }
         if (account_witness_votes.length>0) {
-          sdb_account_witness_votes.collection.insertMany(account_witness_votes, {ordered: false}, function(err,res){
-            if (err){
-              console.log('account_witness_votes',err);
-            }
-          });
+         
         }
         if (escrow_transfers.length>0) {
-          sdb_escrow_transfers.collection.insertMany(escrow_transfers, {ordered: false}, function(err,res){
-            if (err){
-              console.log('escrow_transfers',err);
-            }
-          });
+    
         }
       }//if numberofDays
     }//if block
 
     /** Store On DB Last Parsed Block */
     try {
-      await sdb_states.updateOne({}, { blockNumber: blockNum, timestamp: blockTime }, { "multi" : false, "upsert" : true });
       console.log('Block Parsed', blockNum);
     } catch (err) {
       console.log('Error Saving', blockNum, err);
