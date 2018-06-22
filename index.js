@@ -6,6 +6,7 @@ const https = require('https');
 const utils = require('./helpers/utils');
 const Regex = require("regex");
 const config = require('./config.js');
+const getContent = require('./helpers/getContent');
 let {options} = config;
 
 
@@ -51,8 +52,7 @@ const start = async () => {
   
   const lastBlockNum = await getBlockNum();
   console.log('Last Block Num', lastBlockNum);
-  //876000 blocks ~ 1 month
-  //2628000 blacks ~ 3 month
+
   utils.streamBlockNumFrom(lastBlockNum, options.delayBlocks, async (err, blockNum) => {
     awaitingBlocks.push(blockNum);
 
@@ -129,17 +129,21 @@ const parseNextBlock = async () => {
           let oop = op[1];
 
           if (op[0]==='vote') {
+            if(oop.permlink.includes('u02x93')) {
+              votes.push(oop.author + '/' + oop.permlink)
+              //
+            }
             
-            votes.push({
+            /*votes.push({
               _id: oop.indx,
               voter: oop.voter,
               weight: oop.weight,
               author: oop.author,
               permlink: oop.permlink,
               timestamp: oop.timestamp
-            });
+            });*/
           }
-          if (op[0]==='transfer') {
+          /*if (op[0]==='transfer') {
             transfers.push({
               _id: oop.indx,
               from: oop.from,
@@ -180,77 +184,6 @@ const parseNextBlock = async () => {
               }
             }
           }
-          if (op[0]==='claim_reward_balance') {
-            rewards.push({
-              _id: oop.indx,
-              account: oop.account,
-              reward_steem: oop.reward_steem,
-              reward_sbd: oop.reward_sbd,
-              reward_vests: oop.reward_vests,
-              timestamp: oop.timestamp
-            });
-          }
-          if (op[0]==='comment') {
-            let regg = /(?:^|[^a-zA-Z0-9_＠\/!@#$%&*.])(?:(?:@|＠)(?!\/))([a-zA-Z0-9-.]{3,16})(?:\b(?!@|＠)|$)/g;
-            
-            if (oop.body && oop.body.indexOf('@@')===-1) {
-
-              let lmentions = oop.body.match(regg);
-              let postType = false;
-              let mm = [];
-
-              oop.parent_author === ''?postType=true:postType=false;
-
-              if (lmentions && lmentions.length>0) {
-                //console.log('mentions',mentions);
-                for (var io = 0; io < lmentions.length; io++) {
-                  var tm = lmentions[io].split('@')[1];
-                  if (tm !== oop.author) {
-                    if (isNaN(parseInt(tm))) {
-                      mm.push(tm);
-                    }
-                  }
-                }
-                //console.log(mm);
-                let mn = mm.filter((el, k, a) => k === a.indexOf(el));
-                for (var j = 0; j < mn.length; j++) {
-                  mentions.push({
-                    _id: oop.indx+'-'+j,
-                    author: oop.author,
-                    permlink: oop.permlink,
-                    post: postType,
-                    account: mn[j],
-                    timestamp: oop.timestamp
-                  });
-                }
-              }
-            }
-
-            comments.push({
-              _id: oop.indx,
-              parent_author: oop.parent_author,
-              parent_permlink: oop.parent_permlink,
-              author: oop.author,
-              permlink: oop.permlink,
-              title: oop.title,
-              body: oop.body,
-              json_metadata: oop.json_metadata,
-              timestamp: oop.timestamp
-            });
-          }
-          if (op[0]==='comment_options') {
-            oop.extensions = JSON.stringify(oop.extensions);
-            comment_options.push({
-              _id: oop.indx,
-              author: oop.author,
-              permlink: oop.permlink,
-              max_accepted_payout: oop.max_accepted_payout,
-              allow_votes: oop.allow_votes,
-              allow_curation_rewards: oop.allow_curation_rewards,
-              extensions: oop.extensions,
-              timestamp: oop.timestamp
-            });
-          }
           if (op[0]==='account_update') {
             oop.active = JSON.stringify(oop.active);
             oop.posting = JSON.stringify(oop.posting);
@@ -265,209 +198,17 @@ const parseNextBlock = async () => {
               json_metadata: oop.json_metadata,
               timestamp: oop.timestamp
             });
-          }
-          if (op[0]==='producer_reward') {
-            producer_rewards.push({
-              _id: oop.indx,
-              producer: oop.producer,
-              vesting_shares: oop.vesting_shares,
-              timestamp: oop.timestamp
-            });
-          }
-          if (op[0]==='curation_reward') {
-            curation_rewards.push({
-              _id: oop.indx,
-              curator: oop.curator,
-              reward: oop.reward,
-              comment_author: oop.comment_author,
-              comment_permlink: oop.comment_permlink,
-              timestamp: oop.timestamp
-            });
-          }
-          if (op[0]==='author_reward') {
-            author_rewards.push({
-              _id: oop.indx,
-              author: oop.author,
-              permlink: oop.permlink,
-              sbd_payout: oop.sbd_payout,
-              steem_payout: oop.steem_payout,
-              vesting_payout: oop.vesting_payout,
-              timestamp: oop.timestamp
-            });
-          }
-          if (op[0]==='delegate_vesting_shares') {
-            delegate_vesting_shares.push({
-              _id: oop.indx,
-              delegator: oop.delegator,
-              delegatee: oop.delegatee,
-              vesting_shares: oop.vesting_shares,
-              timestamp: oop.timestamp
-            });
-          }
-          if (op[0]==='comment_benefactor_reward') {
-            comment_benefactor_rewards.push({
-              _id: oop.indx,
-              benefactor: oop.benefactor,
-              author: oop.author,
-              permlink: oop.permlink,
-              reward: oop.reward,
-              vest: parseFloat(oop.reward),
-              timestamp: oop.timestamp
-            });
-          }
-          if (op[0]==='transfer_to_vesting') {
-            transfer_to_vestings.push({
-              _id: oop.indx,
-              from: oop.from,
-              to: oop.to,
-              amount: oop.amount,
-              timestamp: oop.timestamp
-            });
-          }
-          if (op[0]==='fill_order') {
-            fill_orders.push({
-              _id: oop.indx,
-              current_owner: oop.current_owner,
-              current_orderid: oop.current_orderid,
-              current_pays: oop.current_pays,
-              open_owner: oop.open_owner,
-              open_orderid: oop.open_orderid,
-              open_pays: oop.open_pays,
-              timestamp: oop.timestamp
-            });
-          }
-          if (op[0]==='return_vesting_delegation') {
-            return_vesting_delegations.push({
-              _id: oop.indx,
-              account: oop.account,
-              vesting_shares: oop.vesting_shares,
-              timestamp: oop.timestamp
-            });
-          }
-          if (op[0]==='limit_order_create'){
-            limit_order_creates.push({
-              _id: oop.indx,
-              owner: oop.owner,
-              orderid: oop.orderid,
-              amount_to_sell: oop.amount_to_sell,
-              min_to_receive: oop.min_to_receive,
-              fill_or_kill: oop.fill_or_kill,
-              expiration: oop.expiration,
-              timestamp: oop.timestamp
-            });
-          }
-          if (op[0]==='withdraw_vesting'){
-            withdraw_vestings.push({
-              _id: oop.indx,
-              account: oop.account,
-              vesting_shares: oop.vesting_shares,
-              timestamp: oop.timestamp
-            });
-          }
-          if (op[0]==='account_witness_vote') {
-            
-            account_witness_votes.push({
-              _id: oop.indx,
-              account: oop.account,
-              witness: oop.witness,
-              approve: oop.approve,
-              timestamp: oop.timestamp
-            });
-          }
-          if (op[0]==='fill_vesting_withdraw') {
-            fill_vesting_withdraws.push({
-              _id: oop.indx,
-              from_account: oop.from_account,
-              to_account: oop.to_account,
-              withdrawn: oop.withdrawn,
-              deposited: oop.deposited,
-              timestamp: oop.timestamp
-            });
-          }
-          if (op[0]==='escrow_transfer') {
-            escrow_transfers.push({
-              _id: oop.indx,
-              from: oop.from,
-              to:  oop.to,
-              sbd_amount: oop.sbd_amount,
-              steem_amount: oop.steem_amount,
-              escrow_id: oop.escrow_id,
-              agent: oop.agent,
-              fee: oop.fee,
-              json_meta: oop.json_meta,
-              ratification_deadline: oop.ratification_deadline,
-              escrow_expiration: oop.escrow_expiration,
-              timestamp: oop.timestamp
-            });
-          }
+          }*/
+
         }//for
 
         if (votes.length>0) {
-          
+          [...new Set(votes)].map(vote => {
+            const splittedVote = vote.split('/')
+            return getContent.getContent(splittedVote[0], splittedVote[1])
+          })
         }
-        if (transfers.length>0) {
-          
-        }
-        if (follows.length>0) {
-          
-        }
-        if (reblogs.length>0) {
-          
-        }
-        if (mentions.length>0) {
-          
-        }
-        if (comments.length>0) {
-          
-        }
-        if (comment_options.length>0) {
-          
-        }
-        if (rewards.length>0) {
-          
-        }
-        if (account_updates.length>0) {
-          
-        }
-        if (producer_rewards.length>0) {
-          
-        }
-        if (curation_rewards.length>0) {
-          
-        }
-        if (author_rewards.length>0) {
-          
-        }
-        if (delegate_vesting_shares.length>0) {
-          
-        }
-        if (comment_benefactor_rewards.length>0) {
-          
-        }
-        if (transfer_to_vestings.length>0) {
-          
-        }
-        if (fill_orders.length>0) {
         
-        }
-        if (return_vesting_delegations.length>0) {
-
-        }
-        if (withdraw_vestings.length>0) {
-         
-        }
-        if (limit_order_creates.length>0) {
-         
-        }
-        if (fill_vesting_withdraws.length>0) {
-         
-        }
-        if (account_witness_votes.length>0) {
-         
-        }
-        if (escrow_transfers.length>0) {
-    
-        }
       }//if numberofDays
     }//if block
 
