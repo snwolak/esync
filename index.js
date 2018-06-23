@@ -225,7 +225,7 @@ const parseNextBlock = async () => {
     await parseNextBlock();
 
   } else {
-    await utils.sleep(3010);
+    await utils.sleep(1000);
     await parseNextBlock();
   }
 };
