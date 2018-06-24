@@ -1,5 +1,5 @@
 ## steemblr backend
-
+Backend scripts based on esync and cloud functions.
 ### Setup
 ```
 git clone https://github.com/snwolak/steemblr_backend.git
