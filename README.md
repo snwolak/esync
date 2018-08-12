@@ -1,10 +1,18 @@
-# esync
+## steemblr backend
+Backend scripts based on esync and cloud functions.
+### Setup
+```
+git clone https://github.com/snwolak/steemblr_backend.git
+cd steemblr_backend
+npm install
+npm start
+```
+### Setup for firebase functions
+```
+firebase init
+paste firebase folder from this repo
+firebase serve
+```
+### ENV
 
-eSync is simple script to sync Steem blockchain to Mongodb
-
-Currently it is made to keep only last 90 days of the records on database.
-
-
-If you are developer, feel free to submit pull request to improve code
-
-*[WIP - not production ready]*
+To launch firebase functions you need firebase admin api creditentials and save them as serviceAccount.json file in functions folder.
