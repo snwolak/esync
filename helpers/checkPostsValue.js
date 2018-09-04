@@ -3,4 +3,6 @@ const checkPostsValue = props => {
     return Number(a) + Number(b);
   });
 };
-export default checkPostsValue;
+module.exports = {
+  checkPostsValue,
+};
