@@ -4,5 +4,5 @@ const checkPostsValue = props => {
   });
 };
 module.exports = {
-  checkPostsValue,
+  checkPostsValue
 };

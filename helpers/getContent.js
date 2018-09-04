@@ -22,9 +22,11 @@ const getContent = async (author, permlink) => {
     const evaluatePost = axios.post(rateUrl, {
       votes: bucket[0].net_votes,
       comments: bucket[0].children,
-      value: checkPostsValue([bucket[0].total_payout_value.replace("SBD", ""),
+      value: checkPostsValue.checkPostsValue([bucket[0].total_payout_value.replace("SBD", ""),
       bucket[0].pending_payout_value.replace("SBD", ""),
       bucket[0].total_pending_payout_value.replace("STEEM", "")])
+    }).catch(err => {
+      console.log(err)
     })
     axios.post(url, {post: bucket[0], rating: evaluatePost.trending})
     .then(function(response){
