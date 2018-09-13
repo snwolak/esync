@@ -1,7 +1,7 @@
 const steem = require('steem');
 const axios = require('axios')
 const checkPostsValue = require('./checkPostsValue')
-const url = 'https://us-central1-steemblr.cloudfunctions.net/syncPosts'
+const url = 'http://localhost:5000/steemblr/us-central1/syncPosts'
 const rateUrl = 'http://localhost:3005/rate'
 const getContent = async (author, permlink) => {
   let bucket = [];
@@ -32,8 +32,8 @@ const getContent = async (author, permlink) => {
     }).catch(err => {
       console.log(err)
     })
-  
-    axios.post(url, {post: bucket[0], rating: data.trending})
+    bucket[0].rating = data.trending
+    axios.post(url, {post: bucket[0]})
     .then(function(response){
     }).catch(e => {
       console.log(e)
