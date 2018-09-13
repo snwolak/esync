@@ -16,19 +16,24 @@ const getContent = async (author, permlink) => {
     return bucket[0];
   })
   .catch(function(error) {
-    console.log(error);
+    //console.log(error);
   });
   if(bucket[0].parent_author === "") {
-    const evaluatePost = axios.post(rateUrl, {
+    let data = 0;
+    const evaluatePost = await axios.post(rateUrl, {
       votes: bucket[0].net_votes,
       comments: bucket[0].children,
       value: checkPostsValue.checkPostsValue([bucket[0].total_payout_value.replace("SBD", ""),
       bucket[0].pending_payout_value.replace("SBD", ""),
       bucket[0].total_pending_payout_value.replace("STEEM", "")])
+    }).then(res => {
+      data = res.data
+      return res.data
     }).catch(err => {
       console.log(err)
     })
-    axios.post(url, {post: bucket[0], rating: evaluatePost.trending})
+  
+    axios.post(url, {post: bucket[0], rating: data.trending})
     .then(function(response){
     }).catch(e => {
       console.log(e)
