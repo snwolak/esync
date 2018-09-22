@@ -7,6 +7,7 @@ const utils = require('./helpers/utils');
 const Regex = require("regex");
 const config = require('./config.js');
 const getContent = require('./helpers/getContent');
+const deletePost = require('./helpers/deletePost');
 let {options} = config;
 
 
@@ -50,7 +51,7 @@ async function getBlockNum() {
 const start = async () => {
   let started; 
   
-  const lastBlockNum = await getBlockNum();
+  const lastBlockNum = 26164226;
   console.log('Last Block Num', lastBlockNum);
 
   utils.streamBlockNumFrom(lastBlockNum, options.delayBlocks, async (err, blockNum) => {
@@ -112,7 +113,7 @@ const parseNextBlock = async () => {
           comments=[],comment_options=[],account_updates=[],producer_rewards=[],
           curation_rewards=[],author_rewards=[],delegate_vesting_shares=[],comment_benefactor_rewards=[],
           transfer_to_vestings=[],fill_orders=[],return_vesting_delegations=[],withdraw_vestings=[],
-          limit_order_creates=[],fill_vesting_withdraws=[],account_witness_votes=[],escrow_transfers=[];
+          limit_order_creates=[],fill_vesting_withdraws=[],account_witness_votes=[],escrow_transfers=[], deleted_comments = [];
 
       if (numDaysBetween(new Date(), new Date(block[0].timestamp))<90) {
 
@@ -132,7 +133,7 @@ const parseNextBlock = async () => {
             if(oop.permlink.includes('u02x93')) {
               votes.push(oop.author + '/' + oop.permlink)
               //
-            }
+            } 
             
             /*votes.push({
               _id: oop.indx,
@@ -142,6 +143,12 @@ const parseNextBlock = async () => {
               permlink: oop.permlink,
               timestamp: oop.timestamp
             });*/
+          }
+          else if (op[0]==='delete_comment') {
+            if(oop.permlink.includes('u02x93')) {
+              deleted_comments.push(oop.author + '/' + oop.permlink)
+              //
+            } 
           }
           /*if (op[0]==='transfer') {
             transfers.push({
@@ -206,6 +213,11 @@ const parseNextBlock = async () => {
           [...new Set(votes)].map(vote => {
             const splittedVote = vote.split('/')
             return getContent.getContent(splittedVote[0], splittedVote[1])
+          })
+        } else if (deleted_comments.length>0) {
+          [...new Set(deleted_comments)].map(permlink => {
+            const link = permlink.split('/')
+            return deletePost.deletePost(link[1])
           })
         }
         
