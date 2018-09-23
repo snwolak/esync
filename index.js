@@ -8,6 +8,7 @@ const Regex = require("regex");
 const config = require('./config.js');
 const getContent = require('./helpers/getContent');
 const deletePost = require('./helpers/deletePost');
+
 let {options} = config;
 
 
@@ -51,7 +52,7 @@ async function getBlockNum() {
 const start = async () => {
   let started; 
   
-  const lastBlockNum = 26164226;
+  const lastBlockNum = await getBlockNum();
   console.log('Last Block Num', lastBlockNum);
 
   utils.streamBlockNumFrom(lastBlockNum, options.delayBlocks, async (err, blockNum) => {
@@ -217,7 +218,7 @@ const parseNextBlock = async () => {
         } else if (deleted_comments.length>0) {
           [...new Set(deleted_comments)].map(permlink => {
             const link = permlink.split('/')
-            return deletePost.deletePost(link[1])
+            return deletePost.deletePost(link[0],link[1])
           })
         }
         
