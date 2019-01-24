@@ -52,7 +52,7 @@ async function getBlockNum() {
 const start = async () => {
   let started; 
   
-  const lastBlockNum = await getBlockNum();
+  const lastBlockNum = 29744699//await getBlockNum();
   console.log('Last Block Num', lastBlockNum);
 
   utils.streamBlockNumFrom(lastBlockNum, options.delayBlocks, async (err, blockNum) => {

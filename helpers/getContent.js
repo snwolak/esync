@@ -1,10 +1,9 @@
 const steem = require('steem');
 const axios = require('axios')
-const fetch = require('node-fetch');
-const syncPosts = require('./syncPosts')
 const checkPostsValue = require('./checkPostsValue')
-const url = 'http://localhost:5000/steemblr/us-central1/syncPosts'
 const rateUrl = 'http://localhost:3005/rate'
+const sendUrl = "http://localhost:3005/send"
+
 const getContent = async (author, permlink) => {
   let bucket = [];
   
@@ -35,13 +34,12 @@ const getContent = async (author, permlink) => {
     }).catch(err => {
       console.log(err)
     })
+    
   
-    bucket[0].rating = await data.trending
-    await syncPosts.sync({post: bucket[0]})
-    .then(function(response){
-    }).catch(e => {
-      console.log(e)
-    });
+    bucket[0].rating = data.trending
+    const obj = bucket[0]
+    await axios.post(sendUrl, obj)
+     
   }
   
   return void 0; 
