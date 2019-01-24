@@ -12,7 +12,7 @@ const getContent = async (author, permlink) => {
   )
   .then(result => {
     bucket.push(result)
-  
+    bucket[0].rating = 0.00
     return bucket[0];
   })
   .catch(function(error) {
@@ -28,11 +28,12 @@ const getContent = async (author, permlink) => {
       bucket[0].total_pending_payout_value.replace("STEEM", "")])
     }).then(res => {
       data = res.data
+      console.log(res.data)
       return res.data
     }).catch(err => {
       console.log(err)
     })
-    bucket[0].rating = data.trending
+    bucket[0].rating = await data.trending
     axios.post(url, {post: bucket[0]})
     .then(function(response){
     }).catch(e => {
